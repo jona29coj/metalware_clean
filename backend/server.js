@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -5,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 const reportsDir = path.join(__dirname, 'monthly_reports');
+const authMiddleware = require('./authMiddleware');
 const energyRoute = require('./hconsumption');
 const energytestRoute = require('./hconsumptiontest');
 const meterRoutes = require('./econsumption');
@@ -22,6 +25,8 @@ const mcpeakRoutes = require('./mcpeak');
 const pfRoutes = require('./pf');
 const hkVAhRoute = require('./hkVAhconsumption');
 const hkVAhconsumptiontestRoute = require('./hkVAhconsumptiontest');
+const hkVAhconsumptionPredRoute = require('./hkVAhconsumptionPred');
+const zkVAhconsumptionPredRoute = require('./zkVAhconsumptionPred');
 const zkVAhConsumptionRoute = require('./zkVAhconsumption');
 const zkVAhConsumptiontestRoute = require('./zkVAhconsumptiontest');
 const ccRoutes = require('./cc');
@@ -56,19 +61,23 @@ const dashboardpt2testRoute = require('./dashboardpt2test');
 const opeakdemandmbRoute = require('./opeakdemandmb');
 const zkVAazmbRoute = require('./zkVAazmb');
 const ehconsumptiontestRoute = require('./ehconsumptiontest');
+const modbusRoute = require('./modbus.js');
 const app = express();
-const port = 3001;
-
-const baseFolderPath = '/Users/jonathanprince/Documents/Work/filesTest';
-
-app.use('/reports', express.static(path.join(__dirname, 'monthly_reports')));
-app.use('/uploads', express.static(baseFolderPath));
+const port = 3002;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
+app.use('/api', authRoute);
+app.use('/api', logoutRoute);
+app.use('/api', heartBeatRoute);
+app.use('/api', modbusRoute);
+app.use('/api', hkVAhconsumptionPredRoute);
+app.use('/api', zkVAhconsumptionPredRoute);
+app.use('/api', authMiddleware);
 app.use('/api', energyRoute);
 app.use('/api', energytestRoute);
 app.use('/api', meterRoutes);
@@ -94,9 +103,6 @@ app.use('/api', apdtestRoute);
 app.use('/api', hcostconsumptionRoute);
 app.use('/api', hcostconsumptiontestRoute);
 app.use('/api', mcapconsRoutes);
-app.use('/api', authRoute);
-app.use('/api', logoutRoute);
-app.use('/api', heartBeatRoute);
 app.use('/api', filesRoute);
 app.use('/api', mrRoute);
 app.use('/api', mrtestRoute);
@@ -122,6 +128,8 @@ app.use('/api', dashboardpt2testRoute);
 app.use('/api', opeakdemandmbRoute);
 app.use('/api', zkVAazmbRoute);
 
+app.use('/reports', express.static(path.join(__dirname, 'monthly_reports')));
+
 app.get('/api/list-reports', (req, res) => {
   fs.readdir(reportsDir, (err, files) => {
     if (err) {
@@ -136,15 +144,13 @@ app.get('/api/list-reports', (req, res) => {
 
 app.get('/api/download-report/:filename', (req, res) => {
   const file = path.join(reportsDir, req.params.filename);
-  
-  // Set correct headers
+
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename=${req.params.filename}`);
-  
-  // Stream the file
+
   const fileStream = fs.createReadStream(file);
   fileStream.pipe(res);
-  
+
   fileStream.on('error', (err) => {
     console.error('Error streaming file:', err);
     res.status(500).send('Error downloading file');
@@ -156,11 +162,9 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(port, () => {
+app.listen(port,"127.0.0.1", () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-
 
 
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('./dbpg'); 
 const moment = require('moment-timezone');
 
-// ✅ Meter-wise consumption + hlCons together
+
 async function fetchConsumptionMeterWise(startDateTime, endDateTime) {
   const query = `
     SELECT energy_meter_id,
@@ -18,13 +18,13 @@ async function fetchConsumptionMeterWise(startDateTime, endDateTime) {
 
   const { rows } = await pool.query(query, [startDateTime, endDateTime]);
 
-  // Convert properly
+ 
   const meterWiseConsumption = rows.map(row => ({
     meter_id: Number(row.energy_meter_id),
     consumption: parseFloat(row.consumption) || 0,
   }));
 
-  // 🚫 EXCLUDE meter 12 from zone calculations
+  
   const filteredMeters = meterWiseConsumption.filter(m => m.meter_id !== 12);
 
   const validZones = filteredMeters.filter(zone => zone.consumption > 0);
@@ -57,16 +57,10 @@ async function fetchConsumptionMeterWise(startDateTime, endDateTime) {
     otherZoneConsumption: parseFloat(otherZoneConsumption.toFixed(1)),
   };
 
-  console.log("✅ fetchConsumptionMeterWise result:", {
-    meterWiseConsumption,
-    hlCons,
-  });
-
   return { meterWiseConsumption, hlCons };
 }
 
 
-// ✅ Peak demand
 async function getPeakDemand(startDateTime, endDateTime) {
   try {
     const cutoff = moment.tz("2025-05-15 00:00:00", "Asia/Kolkata");
@@ -75,7 +69,7 @@ async function getPeakDemand(startDateTime, endDateTime) {
     let query;
     let params = [startDateTime, endDateTime];
 
-    if (start.isAfter(cutoff)) {
+    if (start.isSameOrAfter(cutoff)) {
       query = `
         SELECT ROUND(MAX(total_kva)::NUMERIC, 1) AS peak_demand
         FROM modbus_data
@@ -97,14 +91,12 @@ async function getPeakDemand(startDateTime, endDateTime) {
 
     const { rows } = await pool.query(query, params);
     const peak = rows[0]?.peak_demand || 0;
-    console.log("✅ getPeakDemand result:", peak);
     return peak;
   } catch (err) {
     throw err;
   }
 }
 
-// ✅ kWh consumption
 async function getKWhConsumption(startDateTime, endDateTime) {
   const query = `
   SELECT COALESCE(ROUND(SUM(diff)::numeric, 1), 0) AS consumptionkwh
@@ -125,7 +117,6 @@ async function getKWhConsumption(startDateTime, endDateTime) {
   return { consumptionkWh: parseFloat(rows[0]?.consumptionkwh || 0) };
 }
 
-// ✅ kVAh consumption
 async function getKVAhConsumption(startDateTime, endDateTime) {
     const query = `
     SELECT COALESCE(ROUND(SUM(diff)::numeric, 1), 0) AS consumptionkvah
@@ -146,7 +137,6 @@ async function getKVAhConsumption(startDateTime, endDateTime) {
     return { consumptionkVAh: parseFloat(rows[0]?.consumptionkvah || 0) };
 }
 
-// ✅ Cost calculation
 async function getConsumptionCost(startDateTime, endDateTime) {
     const query = `
       SELECT
@@ -157,13 +147,13 @@ async function getConsumptionCost(startDateTime, endDateTime) {
       FROM (
         SELECT
           energy_meter_id,
-          DATE(timestamp) AS day,
+          DATE(timestamp AT TIME ZONE 'Asia/Kolkata') AS day,
           CASE
-            WHEN CAST(timestamp::time AS time) BETWEEN TIME '00:00:00' AND TIME '02:59:59' THEN '00:00-03:00'
-            WHEN CAST(timestamp::time AS time) BETWEEN TIME '03:00:00' AND TIME '04:59:59' THEN '03:00-05:00'
-            WHEN CAST(timestamp::time AS time) BETWEEN TIME '05:00:00' AND TIME '09:59:59' THEN '05:00-10:00'
-            WHEN CAST(timestamp::time AS time) BETWEEN TIME '10:00:00' AND TIME '18:59:59' THEN '10:00-19:00'
-            WHEN CAST(timestamp::time AS time) BETWEEN TIME '19:00:00' AND TIME '23:59:59' THEN '19:00-23:59'
+            WHEN CAST((timestamp AT TIME ZONE 'Asia/Kolkata')::time AS time) BETWEEN TIME '00:00:00' AND TIME '02:59:59' THEN '00:00-03:00'
+            WHEN CAST((timestamp AT TIME ZONE 'Asia/Kolkata')::time AS time) BETWEEN TIME '03:00:00' AND TIME '04:59:59' THEN '03:00-05:00'
+            WHEN CAST((timestamp AT TIME ZONE 'Asia/Kolkata')::time AS time) BETWEEN TIME '05:00:00' AND TIME '09:59:59' THEN '05:00-10:00'
+            WHEN CAST((timestamp AT TIME ZONE 'Asia/Kolkata')::time AS time) BETWEEN TIME '10:00:00' AND TIME '18:59:59' THEN '10:00-19:00'
+            WHEN CAST((timestamp AT TIME ZONE 'Asia/Kolkata')::time AS time) BETWEEN TIME '19:00:00' AND TIME '23:59:59' THEN '19:00-23:59'
           END AS period,
           MAX(kvah) - MIN(kvah) AS consumption
         FROM modbus_data
@@ -200,7 +190,6 @@ async function getConsumptionCost(startDateTime, endDateTime) {
   }
   
 
-// ✅ Hourly consumption
 async function fetchHourlyConsumption(startDateTime, endDateTime) {
   const query = `
   WITH meter_hourly AS (

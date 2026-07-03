@@ -1,5 +1,3 @@
-"use client";
-
 import { createContext, useState, useEffect, useContext } from "react";
 import moment from "moment-timezone";
 
@@ -7,8 +5,8 @@ export const DateContext = createContext();
 
 export const DateProvider = ({ children }) => {
   const [dateRange, setDateRange] = useState({
-    startDateTime: moment().tz("Asia/Kolkata").startOf("day").format("YYYY-MM-DD HH:mm"),
-    endDateTime: moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm"),
+    startDateTime: moment().startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+    endDateTime: moment().format("YYYY-MM-DD HH:mm:ss"),
   });
 
   const handleDateChange = ({ startDateTime, endDateTime }) => {
@@ -17,11 +15,6 @@ export const DateProvider = ({ children }) => {
       endDateTime: endDateTime || prev.endDateTime,
     }));
   };
-
-  useEffect(() => {
-    console.log("📅 Start DateTime:", dateRange.startDateTime);
-    console.log("📅 End DateTime:", dateRange.endDateTime);
-  }, [dateRange]);
 
   return (
     <DateContext.Provider value={{ ...dateRange, handleDateChange }}>

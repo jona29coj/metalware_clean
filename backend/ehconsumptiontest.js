@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('./dbpg'); // your pg pool
+const pool = require('./dbpg'); 
 
-// ------------------ Hourly Consumption ------------------
 async function getHourlyConsumptionForRange(startDate, endDate) {
   try {
     const query = `
@@ -45,7 +44,6 @@ async function getHourlyConsumptionForRange(startDate, endDate) {
       }
     }
 
-    console.log('Hourly consumption (Postgres):', finalResult);
     return finalResult;
   } catch (error) {
     console.error('❌ Database query failed (Postgres):', error);

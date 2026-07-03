@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const moment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
-const pool = require('./dbpg');   // <-- Switch to PostgreSQL pool
+const pool = require('./dbpg');
 
 const router = express.Router();
 
@@ -22,10 +22,23 @@ router.get('/auth', async (req, res) => {
     }
 
     const { username, deviceName, ipAddress } = decoded;
-    const currentTime = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+
+    // ✅ Clean IP (take first IP only)
+    const cleanIp = ipAddress
+      ? ipAddress.split(",")[0].trim()
+      : null;
+
+    // ✅ Trim device name (avoid huge user-agent strings)
+    const safeDeviceName = deviceName
+      ? deviceName.slice(0, 255)
+      : null;
+
+    const currentTime = moment()
+      .tz('Asia/Kolkata')
+      .format('YYYY-MM-DD HH:mm:ss');
 
     const setCookieOptions = {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'None',
       domain: '.elementsenergies.com',
@@ -37,7 +50,7 @@ router.get('/auth', async (req, res) => {
     // ---------------------------------------------
     const existing = await pool.query(
       `
-      SELECT session_id 
+      SELECT session_id
       FROM user_sessions
       WHERE username = $1
         AND device_name = $2
@@ -46,7 +59,7 @@ router.get('/auth', async (req, res) => {
       ORDER BY login_time DESC
       LIMIT 1
       `,
-      [username, deviceName, ipAddress]
+      [username, safeDeviceName, cleanIp]
     );
 
     if (existing.rows.length > 0) {
@@ -64,8 +77,8 @@ router.get('/auth', async (req, res) => {
         message: "Session updated",
         authenticated: true,
         username,
-        deviceName,
-        ipAddress,
+        deviceName: safeDeviceName,
+        ipAddress: cleanIp,
       });
     }
 
@@ -78,7 +91,7 @@ router.get('/auth', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
       RETURNING session_id
       `,
-      [username, currentTime, currentTime, deviceName, ipAddress]
+      [username, currentTime, currentTime, safeDeviceName, cleanIp]
     );
 
     const newSessionId = insertResult.rows[0].session_id;
@@ -89,8 +102,8 @@ router.get('/auth', async (req, res) => {
       message: "New session created",
       authenticated: true,
       username,
-      deviceName,
-      ipAddress,
+      deviceName: safeDeviceName,
+      ipAddress: cleanIp,
     });
 
   } catch (error) {

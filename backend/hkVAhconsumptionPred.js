@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('./dbpg'); 
 
+const API_KEY = process.env.API_KEY;
+
 
 // ------------------ Fetch Hourly Consumption ------------------
 async function fetchHourlyConsumption(startDateTime, endDateTime) {
@@ -40,8 +42,13 @@ async function fetchHourlyConsumption(startDateTime, endDateTime) {
 }
 
 // ------------------ Route ------------------
-router.get('/hkVAhconsumptiontest', async (req, res) => {
+router.get('/hkVAhconsumptionPred', async (req, res) => {
 
+  const clientKey = req.headers["x-api-key"];
+
+    if (!clientKey || clientKey !== API_KEY) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
   const { startDateTime, endDateTime } = req.query;
 
   if (!startDateTime || !endDateTime) {

@@ -4,7 +4,7 @@ const pool = require('./dbpg.js');
 
 async function getPeakDemandForDate(startDateTime, endDateTime) {
 
-  const cutoff = new Date('2025-05-15 00:00:00');
+  const cutoff = new Date("2025-05-15 00:00:00");
   const start = new Date(startDateTime);
 
   let query = '';
@@ -44,7 +44,14 @@ async function getPeakDemandForDate(startDateTime, endDateTime) {
   for (const entry of result.rows) {
     const meter = entry.energy_meter_id;
     const ts = new Date(entry.timestamp);
-    const minuteKey = formatLocalMinute(ts);
+
+const year = ts.getFullYear();
+const month = String(ts.getMonth() + 1).padStart(2, '0');
+const day = String(ts.getDate()).padStart(2, '0');
+const hour = String(ts.getHours()).padStart(2, '0');
+const mins = String(ts.getMinutes()).padStart(2, '0');
+
+const minuteKey = `${year}-${month}-${day} ${hour}:${mins}:00`;
     const val = parseFloat(entry.total_kva);
 
     if (!minuteMeterMap.has(minuteKey)) {
@@ -60,9 +67,6 @@ async function getPeakDemandForDate(startDateTime, endDateTime) {
     }
   }
 
-  // -----------------------------------------------------
-  // ONLY return minutes that exist in DB (no zero-fill)
-  // -----------------------------------------------------
   const output = [];
 
   const sortedMinutes = [...minuteMeterMap.keys()].sort();
@@ -84,14 +88,11 @@ async function getPeakDemandForDate(startDateTime, endDateTime) {
   return output;
 }
 
-
-// ------------------ DGDC ------------------
 async function fetchDGDC(startDateTime, endDateTime) {
-    console.log('📊 fetchDGDC called with:', { startDateTime, endDateTime });
-  
     const query = `
       SELECT
-        TO_CHAR(t1.timestamp, 'YYYY-MM-DD HH24:MI:SS') AS timestamp,
+        TO_CHAR(t1.timestamp AT TIME ZONE 'Asia/Kolkata',
+        'YYYY-MM-DD HH24:MI:SS') AS timestamp,
         t1.total_kw,
         t1.energy_meter_id
       FROM modbus_data t1

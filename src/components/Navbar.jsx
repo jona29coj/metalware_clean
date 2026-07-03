@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { FaArrowRight, FaBell,FaCalendarAlt } from 'react-icons/fa';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import Cookies from 'js-cookie';
 import { DateContext } from '../contexts/DateContext';
 import userprofile from '../components/userprofile.png';
@@ -38,6 +38,15 @@ const Navbar = () => {
   const closeEndPicker = () => {
     setIsEndPickerOpen(false); 
   };
+ 
+  useEffect(() => {
+  setTempStartDateTime(
+    moment(startDateTime).format("YYYY-MM-DDTHH:mm")
+  );
+  setTempEndDateTime(
+    moment(endDateTime).format("YYYY-MM-DDTHH:mm")
+  );
+}, [startDateTime, endDateTime]);
 
 
   useEffect(() => {
@@ -65,17 +74,17 @@ const Navbar = () => {
     fetchNotifications(startDateTime, endDateTime);
   }, [startDateTime, endDateTime]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (start, end) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://mw.elementsenergies.com/api/apdtest?startDateTime=${startDateTime}&endDateTime=${endDateTime}`
+        `https://mw.elementsenergies.com/api/apdtest?startDateTime=${start}&endDateTime=${end}`
       );
       const data = await response.json();
   
       let formatted = [];
   
-      // Peak demand notifications
+     
       if (data?.peakDemandAboveThreshold) {
         formatted = formatted.concat(
           data.peakDemandAboveThreshold.map((entry) => ({
@@ -88,7 +97,7 @@ const Navbar = () => {
         );
       }
   
-      // DG events notifications
+      
       if (data?.dgActivations) {
         formatted = formatted.concat(
           data.dgActivations.map((entry, index) => ({
@@ -101,7 +110,6 @@ const Navbar = () => {
         );
       }
   
-      // Sort notifications by timestamp (latest first)
       formatted.sort((a, b) => {
         const aTime = moment(a.text.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/));
         const bTime = moment(b.text.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/));
@@ -117,13 +125,12 @@ const Navbar = () => {
   };
   
 
-  const handleSubmit = async () => {
-    handleDateChange({
-      startDateTime: tempStartDateTime,
-      endDateTime: tempEndDateTime,
-    });
-    await fetchNotifications(tempStartDateTime, tempEndDateTime);
-  };
+  const handleSubmit = () => {
+  handleDateChange({
+    startDateTime: moment(tempStartDateTime).format("YYYY-MM-DD HH:mm:ss"),
+    endDateTime: moment(tempEndDateTime).format("YYYY-MM-DD HH:mm:ss"),
+  });
+};
 
 
   const handleLogout = async() => {
@@ -161,7 +168,7 @@ const Navbar = () => {
                 <label className="text-sm text-gray-600">Start</label>
                 <input
                   type="datetime-local"
-                  value={moment(tempStartDateTime).format('YYYY-MM-DDTHH:mm')}
+                  value={tempStartDateTime}
                   onChange={(e) => setTempStartDateTime(e.target.value)}
                   className="border rounded px-2 py-1 text-sm"
                 />
@@ -198,7 +205,7 @@ const Navbar = () => {
                 <label className="text-sm text-gray-600">End</label>
                 <input
                   type="datetime-local"
-                  value={moment(tempEndDateTime).format('YYYY-MM-DDTHH:mm')}
+                  value={tempEndDateTime}
                   onChange={(e) => setTempEndDateTime(e.target.value)}
                   className="border rounded px-2 py-1 text-sm"
                 />
@@ -283,7 +290,7 @@ const Navbar = () => {
               <div className="flex flex-col items-center">
                 <img src={userprofile} alt="Profile" className="w-14 h-14 rounded-full mb-2" />
                 <p className="text-gray-800 font-medium">Hi, {username}</p>
-                <p className="text-xs text-gray-500">{moment().tz('Asia/Kolkata').format('DD MMM, HH:mm')}</p>
+                <p className="text-xs text-gray-500">{moment().format('DD MMM, HH:mm')}</p>
               </div>
               <hr className="my-2" />
               <p className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">Help</p>
