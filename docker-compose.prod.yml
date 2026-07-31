@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      args:
+        VITE_API_BASE_URL: https://mw.elementsenergies.com
+    ports:
+      - "127.0.0.1:8080:80"
+
+  backend:
+    ports:
+      - "127.0.0.1:3002:3002"
