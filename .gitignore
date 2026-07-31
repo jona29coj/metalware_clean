@@ -18,3 +18,9 @@ dist/
 
 # OS
 .DS_Store
+
+# local agent settings
+.claude/
+
+# TypeScript build cache
+*.tsbuildinfo
