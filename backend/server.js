@@ -65,7 +65,22 @@ const modbusRoute = require('./modbus.js');
 const app = express();
 const port = 3002;
 
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'https://mw.elementsenergies.com',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -162,8 +177,9 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(port,"127.0.0.1", () => {
-  console.log(`Server is running on http://localhost:${port}`);
+const host = process.env.HOST || "127.0.0.1";
+app.listen(port, host, () => {
+  console.log(`Server is running on http://${host}:${port}`);
 });
 
 

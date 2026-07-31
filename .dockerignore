@@ -1,0 +1,11 @@
+node_modules
+build
+dist
+.git
+.claude
+backend
+.env
+.env.development
+.env.production
+npm-debug.log
+.DS_Store
