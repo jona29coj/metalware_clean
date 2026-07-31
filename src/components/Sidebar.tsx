@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
-import { FiMonitor, FiAlertCircle, FiFileText, FiHome, FiUser, FiSettings, FiFolder } from "react-icons/fi";
+import { FiMonitor, FiAlertCircle, FiFileText, FiHome, FiUser, FiSettings, FiFolder, FiX } from "react-icons/fi";
 import logo from "../logo2.png";
 
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed?: () => void;
+  onClose?: () => void;
 }
 
 const links = {
@@ -26,7 +27,7 @@ const navItems = [
   { name: "Settings", path: "/settings", icon: FiSettings }
 ];
 
-const Sidebar = ({ isCollapsed }: SidebarProps) => {
+const Sidebar = ({ isCollapsed, onClose }: SidebarProps) => {
   const [dropdown, setDropdown] = useState({ monitor: false });
   const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -69,19 +70,27 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
     if (isCollapsed) {
       closeAllDropdowns();
     }
+    onClose?.();
   };
 
 
   return (
     <div ref={sidebarRef} className="h-full w-full overflow-visible bg-white shadow-lg transition-all duration-300 flex flex-col relative">
-      <div className="flex justify-center items-center bg-white p-5">
+      <div className="flex justify-center items-center bg-white p-5 relative">
         <Link to="/dashboard">
           <img src={logo} alt="logo" className="h-auto w-auto object-contain min-w-[49px]" />
         </Link>
+        <button
+          onClick={onClose}
+          className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-800"
+          aria-label="Close menu"
+        >
+          <FiX className="text-xl" />
+        </button>
       </div>
 
       <div className="mt-8 flex flex-col w-full">
-        <NavLink to="/dashboard" className={({ isActive }) => linkClass(isActive, isCollapsed)}>
+        <NavLink to="/dashboard" onClick={handleNavLinkClick} className={({ isActive }) => linkClass(isActive, isCollapsed)}>
           <FiHome className={iconClass} />
           <span className={`${isCollapsed ? "hidden" : "block"}`}>Dashboard</span>
         </NavLink>
@@ -146,7 +155,7 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
         </div>
 
         {navItems.map(({ name, path, icon: Icon }, index) => (
-          <NavLink key={index} to={path} className={({ isActive }) => linkClass(isActive, isCollapsed)}>
+          <NavLink key={index} to={path} onClick={handleNavLinkClick} className={({ isActive }) => linkClass(isActive, isCollapsed)}>
             <Icon className={iconClass} />
             {!isCollapsed && <span>{name}</span>}
           </NavLink>

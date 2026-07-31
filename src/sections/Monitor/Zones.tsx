@@ -14,6 +14,14 @@ interface ZoneMeta {
   category?: string;
 }
 
+// Distinct per-zone colors — ApexCharts' default 8-color palette repeats once
+// there are more series than that, which made zones like PLATING and
+// SPRAY+EPL-II render as the same blue in the stacked chart.
+const ZONE_COLORS = [
+  '#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#9333ea', '#0891b2',
+  '#db2777', '#65a30d', '#ea580c', '#4338ca', '#0d9488', '#78716c',
+];
+
 const zoneMetadata: ZoneMeta[] = [
   { id: 1, name: "PLATING", category: "C-49" },
   { id: 2, name: "DIE CASTING + CHINA BUFFING + CNC", category: "C-50" },
@@ -171,9 +179,12 @@ const Zones = () => {
     title: {
       text: 'Hourly Consumption',
     },
+    colors: ZONE_COLORS,
     xaxis: {
       categories: allZonesHours.map((hour) => hour.substring(11, 16)),
       title: { text: 'Time' },
+      tickAmount: 12,
+      labels: { rotate: 0 },
     },
     yaxis: {
       min: 0,
@@ -223,6 +234,8 @@ const Zones = () => {
     },
     xaxis: {
       categories: zone.data.map((item) => item.hour.substring(11, 16)),
+      tickAmount: 12,
+      labels: { rotate: 0 },
     },
     yaxis: {
       min: 0,

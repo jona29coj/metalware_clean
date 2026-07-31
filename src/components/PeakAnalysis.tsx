@@ -22,6 +22,13 @@ const zoneMetadata = [
   { id: 11, name: "ADMIN BLOCK", category: "C-50" },
 ];
 
+// Distinct per-zone colors — ApexCharts' default 8-color palette repeats once
+// there are more series than that, which made two zones render identically.
+const ZONE_COLORS = [
+  '#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#9333ea', '#0891b2',
+  '#db2777', '#65a30d', '#ea580c', '#4338ca', '#0d9488', '#78716c',
+];
+
 const PeakAnalysis = () => {
   const { startDateTime, endDateTime } = useContext(DateContext)!;
   const location = useLocation();
@@ -122,9 +129,12 @@ const PeakAnalysis = () => {
     title: {
       text: 'Peak Demand',
     },
+    colors: ZONE_COLORS,
     xaxis: {
       categories: uniqueTimesCategories,
       title: { text: 'Time' },
+      tickAmount: 12,
+      labels: { rotate: 0 },
     },
     yaxis: {
       min: 0,
@@ -164,6 +174,8 @@ const PeakAnalysis = () => {
     },
     xaxis: {
       categories: zone.data.map((d: any) => d.hour.substring(11, 16)),
+      tickAmount: 12,
+      labels: { rotate: 0 },
     },
     yaxis: {
       title: { text: 'Total kVA per Minute' },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { FaArrowRight, FaBell,FaCalendarAlt } from 'react-icons/fa';
+import { FaArrowRight, FaBell, FaCalendarAlt, FaBars } from 'react-icons/fa';
 import moment from 'moment';
 import Cookies from 'js-cookie';
 import { DateContext } from '../contexts/DateContext';
@@ -15,9 +15,10 @@ interface NotificationItem {
 interface NavbarProps {
   isCollapsed?: boolean;
   setIsCollapsed?: () => void;
+  onMenuClick?: () => void;
 }
 
-const Navbar = (_props: NavbarProps) => {
+const Navbar = ({ onMenuClick }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -175,6 +176,13 @@ const Navbar = (_props: NavbarProps) => {
     </div>
     )}
     <div className='bg-white w-full h-full flex flex-end p-3 justify-end space-x-3 items-center shadow-md'>
+      <button
+        onClick={onMenuClick}
+        className="md:hidden mr-auto p-2 text-gray-600 hover:text-gray-900"
+        aria-label="Open menu"
+      >
+        <FaBars className="text-lg" />
+      </button>
       <div className='custom-dsm:hidden space-x-3'>
                 <label className="text-sm text-gray-600">Start</label>
                 <input
@@ -185,12 +193,14 @@ const Navbar = (_props: NavbarProps) => {
                 />
       </div>
       <div className="custom-dsm:flex items-center hidden space-x-2">
-        <label className="text-sm text-gray-600">Start</label>
         <button
           onClick={() => setIsStartPickerOpen(true)}
-          className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
+          className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-full hover:bg-gray-200"
         >
-          <FaCalendarAlt className="text-gray-600" />
+          <FaCalendarAlt className="text-gray-600 text-xs" />
+          <span className="text-xs text-gray-700">
+            {moment(tempStartDateTime).format('DD MMM, HH:mm')}
+          </span>
         </button>
       </div>
       {isStartPickerOpen && (
@@ -222,12 +232,14 @@ const Navbar = (_props: NavbarProps) => {
                 />
       </div>
       <div className="custom-dsm:flex items-center hidden space-x-2">
-        <label className="text-sm text-gray-600">End</label>
         <button
           onClick={() => setIsEndPickerOpen(true)}
-          className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
+          className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-full hover:bg-gray-200"
         >
-          <FaCalendarAlt className="text-gray-600" />
+          <FaCalendarAlt className="text-gray-600 text-xs" />
+          <span className="text-xs text-gray-700">
+            {moment(tempEndDateTime).format('DD MMM, HH:mm')}
+          </span>
         </button>
       </div>
       {isEndPickerOpen && (

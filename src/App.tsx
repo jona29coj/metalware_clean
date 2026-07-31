@@ -32,6 +32,8 @@ const ScrollToTop = () => {
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1250);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const App = () => {
   useEffect(() => {
     const handleResize = () => {
       setIsCollapsed(window.innerWidth < 1250);
+      setIsMobile(window.innerWidth < 768);
     };
 
     window.addEventListener('resize', handleResize);
@@ -98,29 +101,58 @@ const App = () => {
           {isAuthenticated && (
             <div className="min-h-screen flex bg-gray-100">
               <div
-                className={`bg-white shadow-md transition-all duration-300 fixed top-0 left-0 h-full ${
-                  isCollapsed ? 'w-[9%]' : 'w-[15.5%]'
-                }`}
+                className={
+                  isMobile
+                    ? `bg-white shadow-md transition-transform duration-300 fixed top-0 left-0 h-full w-64 max-w-[80%] transform ${
+                        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                      }`
+                    : `bg-white shadow-md transition-all duration-300 fixed top-0 left-0 h-full ${
+                        isCollapsed ? 'w-[9%]' : 'w-[15.5%]'
+                      }`
+                }
                 style={{ zIndex: 50 }}
               >
-                <Sidebar isCollapsed={isCollapsed} setIsCollapsed={toggleSidebar} />
+                <Sidebar
+                  isCollapsed={isMobile ? false : isCollapsed}
+                  setIsCollapsed={toggleSidebar}
+                  onClose={() => setIsMobileMenuOpen(false)}
+                />
               </div>
+              {isMobile && isMobileMenuOpen && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-40 transition-opacity duration-300"
+                  style={{ zIndex: 45 }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+              )}
               <UserProvider>
               <div
-                className={`fixed top-0 h-[55px] transition-all duration-300 ${
-                  isCollapsed ? 'left-[9%] w-[91%]' : 'left-[15.5%] w-[84.5%]'
-                }`}
+                className={
+                  isMobile
+                    ? 'fixed top-0 left-0 w-full h-[55px]'
+                    : `fixed top-0 h-[55px] transition-all duration-300 ${
+                        isCollapsed ? 'left-[9%] w-[91%]' : 'left-[15.5%] w-[84.5%]'
+                      }`
+                }
                 style={{ zIndex: 40 }}
               >
-                <Navbar isCollapsed={isCollapsed} setIsCollapsed={toggleSidebar} />
+                <Navbar
+                  isCollapsed={isCollapsed}
+                  setIsCollapsed={toggleSidebar}
+                  onMenuClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                />
               </div>
               </UserProvider>
 
               <div
                 key={refreshKey}
-                className={`flex-1 flex flex-col min-h-screen overflow-hidden max-w-full transition-all duration-300 ${
-                  isCollapsed ? 'ml-[9%]' : 'ml-[15.5%]'
-                }`}
+                className={
+                  isMobile
+                    ? 'flex-1 flex flex-col min-h-screen overflow-hidden max-w-full ml-0'
+                    : `flex-1 flex flex-col min-h-screen overflow-hidden max-w-full transition-all duration-300 ${
+                        isCollapsed ? 'ml-[9%]' : 'ml-[15.5%]'
+                      }`
+                }
               >
                 <div className="flex-1 overflow-auto max-w-full mt-[52px]">
                   <Routes>

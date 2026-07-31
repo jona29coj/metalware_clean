@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from "react";
 
+const MONTH_ORDER: Record<string, number> = {
+  January: 0, February: 1, March: 2, April: 3, May: 4, June: 5,
+  July: 6, August: 7, September: 8, October: 9, November: 10, December: 11,
+};
+
+// Report filenames carry their date as a month name + year (no numeric
+// YYYY-MM), so the API's directory-listing order is effectively random.
+// Parse it out for a proper newest-first sort.
+const reportSortKey = (filename: string) => {
+  const match = filename.match(/Metalware_Report_([A-Za-z]+)_(\d{4})/);
+  if (!match) return 0;
+  const [, month, year] = match;
+  return new Date(parseInt(year, 10), MONTH_ORDER[month] ?? 0).getTime();
+};
+
 const Reports = () => {
   const [fileList, setFileList] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +60,7 @@ const Reports = () => {
       )}
 
       <div className="flex flex-wrap justify-center gap-6">
-        {fileList.map((file) => {
+        {[...fileList].sort((a, b) => reportSortKey(b) - reportSortKey(a)).map((file) => {
           // Strip "Metalware_Report_" prefix and replace underscores with spaces
           const displayName = file
             .replace(/^Metalware_Report_/, "")
@@ -56,11 +71,7 @@ const Reports = () => {
               key={file}
               className="bg-white rounded-lg shadow-md p-4 w-64 min-w-0 flex flex-col overflow-hidden"
             >
-              <p className="font-semibold text-sm mb-2">
-                File:
-              </p>
-
-              <p className="text-sm text-gray-700 break-all whitespace-normal min-w-0 flex-1">
+              <p className="font-semibold text-sm text-gray-800 break-all whitespace-normal min-w-0 flex-1">
                 {displayName}
               </p>
 

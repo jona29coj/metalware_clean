@@ -273,7 +273,7 @@ useEffect(() => {
     }
   });
 
-  const maxValue = Math.max(...heatmapData.flat().filter((v): v is number => v !== null)) || 1;
+  const maxValue = Math.max(0, ...heatmapData.flat().filter((v): v is number => v !== null)) || 1;
 
   const getColor = (value: number | null) => {
     if (value === null || maxValue === 0) return "white";
@@ -882,6 +882,8 @@ const PeakDemand = ({ data }: {data: any}) => {
     xaxis: {
       categories,
       title: { text: "Hour", style: { fontWeight: "bold" } },
+      tickAmount: 12,
+      labels: { rotate: 0 },
     },
     yaxis: {
       min: 0,
@@ -990,8 +992,8 @@ const getMeterName = (id: number) => {
 };
 
 const EnergySources = ({data}: {data: any}) => {
-  const [highZone, setHighZone] = useState<any>(0);
-  const [lowZone, setLowZone] = useState<any>(0);
+  const [highZone, setHighZone] = useState<any>({ consumption: 0 });
+  const [lowZone, setLowZone] = useState<any>({ consumption: 0 });
   const [otherZones, setOtherZones] = useState<any>(0);
 
   useEffect(() => {
@@ -1005,9 +1007,12 @@ const EnergySources = ({data}: {data: any}) => {
   }, [data]);
 
   const totalConsumption =
-  highZone.consumption +
-  lowZone.consumption +
-  otherZones;
+  (highZone.consumption || 0) +
+  (lowZone.consumption || 0) +
+  (parseFloat(otherZones) || 0);
+
+  const pct = (value: number) =>
+    totalConsumption > 0 ? ((value / totalConsumption) * 100).toFixed(1) : '0.0';
 
 
 
@@ -1018,25 +1023,30 @@ const EnergySources = ({data}: {data: any}) => {
     chart: {
       type: "bar",
       background: "transparent",
-      height: 300,
+      height: 160,
       stacked: true,
       toolbar: { show: false },
     },
-    xaxis: { categories: ["Total Consumption"] },
-    yaxis: { title: { text: "Consumption (kVAh)" } },
+    xaxis: {
+      categories: ["Total Consumption"],
+      title: { text: "Consumption (kVAh)" },
+    },
+    yaxis: { show: false },
     plotOptions: {
       bar: {
+        horizontal: true,
         borderRadius: 0,
+        barHeight: '60%',
       },
     },
     dataLabels: { enabled: false },
-    colors: ["rgb(185, 28, 28)", "rgba(96, 165, 250, 0.2)", "rgb(21, 128, 61)"],
+    colors: ["rgb(185, 28, 28)", "rgba(96, 165, 250, 0.6)", "rgb(21, 128, 61)"],
     tooltip: {
       y: {
         formatter: (val: number) => `${val} kVAh`,
       },
     },
-    legend: { show: true },
+    legend: { show: true, position: 'bottom' },
   };
 
   const series = [
@@ -1065,23 +1075,23 @@ const EnergySources = ({data}: {data: any}) => {
                 <h3 className="md:text-sm l:text-md xl:text-md font-semibold text-red-700">High Zone</h3>
                 <p className="md:text-xs l:text-xs xl:text-sm text-gray-900 text-sm mt-2">Zone: {getMeterName(highZone.meter_id)}</p>
                 <p className="md:text-xs l:text-xs xl:text-sm text-gray-900 text-sm mt-1">{highZone.consumption} kVAh</p>
-                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{((highZone.consumption / totalConsumption) * 100).toFixed(1)}% of Total Consumption</p>
+                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{pct(highZone.consumption)}% of Total Consumption</p>
               </div>
               <div className="border border-green-500 p-3 rounded-lg shadow">
                 <h3 className="md:text-sm l:text-md xl:text-md font-semibold text-green-700">Low Zone</h3>
                 <p className="md:text-xs l:text-xs xl:text-sm text-gray-900 text-sm mt-2">Zone: {getMeterName(lowZone.meter_id)}</p>
                 <p className="md:text-xs l:text-xs xl:text-sm text-gray-900 text-sm mt-1">{lowZone.consumption} kVAh</p>
-                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{((lowZone.consumption / totalConsumption) * 100).toFixed(1)}% of Total Consumption</p>
+                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{pct(lowZone.consumption)}% of Total Consumption</p>
               </div>
               <div className="border border-blue-500 p-3 rounded-lg shadow">
                 <h3 className="md:text-sm l:text-md xl:text-md font-semibold text-blue-700">Other Zones</h3>
                 <p className="md:text-xs l:text-xs xl:text-sm text-gray-900 text-sm mt-1">{otherZones} kVAh</p>
-                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{((parseFloat(otherZones) / totalConsumption) * 100).toFixed(1)}% of Total Consumption</p>
+                <p className="md:text-xs l:text-xs xl:text-sm text-sm text-gray-600 mt-1">{pct(parseFloat(otherZones) || 0)}% of Total Consumption</p>
               </div>
             </div>
           </div>
           <div className="flex justify-center items-center mt-6 pt-8">
-            <Chart options={chartOptions} series={series} type="bar" height={300} />
+            <Chart options={chartOptions} series={series} type="bar" height={160} />
           </div>
         </div>
     </div>

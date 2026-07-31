@@ -83,6 +83,8 @@ const PeakDemand = () => {
     },
     xaxis: {
       categories,
+      tickAmount: 12,
+      labels: { rotate: 0 },
       title: {
         text: "Hour",
         style: {

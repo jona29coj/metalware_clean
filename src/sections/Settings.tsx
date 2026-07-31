@@ -158,6 +158,21 @@ const Settings = ({ setUserProfileName }: SettingsProps) => {
             </div>
           </div>
         </div>
+
+        <div className="flex justify-end gap-4 pt-2 border-t border-gray-200">
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 mt-6 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 mt-6 bg-green-600 hover:bg-green-700 text-white rounded-md"
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
   );
