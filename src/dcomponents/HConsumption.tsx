@@ -130,6 +130,7 @@ const chartOptions: ApexOptions = {
   },
   tooltip: {
     shared: true,
+    intersect: false,
     y: {
       formatter: (val: number) => `${val} ${consumptionType}`,
     },

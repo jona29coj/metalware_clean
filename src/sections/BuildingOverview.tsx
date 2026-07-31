@@ -220,6 +220,7 @@ const BuildingOverview = () => {
     colors: ['#34D399', '#60A5FA'], // Green, Blue
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} kWh`,
       },

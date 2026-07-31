@@ -51,6 +51,7 @@ const AirQualityCard = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} ppm`,
       },

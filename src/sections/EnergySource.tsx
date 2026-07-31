@@ -55,6 +55,7 @@ const EnergySources = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} kWh`,
       },

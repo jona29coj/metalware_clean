@@ -96,6 +96,7 @@ const RenewableEnergy = () => {
     colors: ['#60A5FA', '#EF4444'], // Blue, Red
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} kWh`,
       },
@@ -214,6 +215,7 @@ const RenewableEnergy = () => {
     colors: ['#60A5FA', '#EF4444'], // Blue, Red
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} kWh`,
       },

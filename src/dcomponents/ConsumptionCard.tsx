@@ -28,6 +28,7 @@ const WaterConsumptionCard = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val.toFixed(0)} m³`,
       },

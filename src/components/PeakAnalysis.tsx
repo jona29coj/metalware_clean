@@ -132,6 +132,7 @@ const PeakAnalysis = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} kVA`,
       },
@@ -176,6 +177,7 @@ const PeakAnalysis = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       custom: ({ series, seriesIndex, dataPointIndex }: any) => {
         const time = zone.data[dataPointIndex]?.hour.split(" ")[1];
         const value = series[seriesIndex][dataPointIndex];

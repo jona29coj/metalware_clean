@@ -185,6 +185,7 @@ const Zones = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       custom: ({ series, dataPointIndex, w }: any) => {
         let total = 0;
         let rows = '';
@@ -236,6 +237,7 @@ const Zones = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       y: {
         formatter: (val: number) => `${val} ${consumptionType}`,
       },

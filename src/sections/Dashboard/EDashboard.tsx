@@ -665,6 +665,7 @@ const chartOptions: ApexOptions = {
   },
   tooltip: {
     shared: true,
+    intersect: false,
     y: {
       formatter: (val: number) => `${val} ${consumptionType}`,
     },
@@ -914,6 +915,7 @@ const PeakDemand = ({ data }: {data: any}) => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       custom: ({ series, seriesIndex, dataPointIndex }: any) => {
         const time = categories[dataPointIndex];
         const value = series[seriesIndex][dataPointIndex];

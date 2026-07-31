@@ -134,6 +134,7 @@ const PeakDemand = () => {
     },
     tooltip: {
       shared: true,
+      intersect: false,
       custom: ({ series, seriesIndex, dataPointIndex }: any) => {
         const time = categories[dataPointIndex];
         const value = series[seriesIndex][dataPointIndex];
