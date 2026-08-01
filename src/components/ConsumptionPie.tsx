@@ -1,7 +1,16 @@
 import React from 'react';
 import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import * as HighchartsReactModule from 'highcharts-react-official';
 import Highcharts3D from 'highcharts/highcharts-3d';
+
+// highcharts-react-official's CJS build ends up double-wrapped under Vite's
+// interop (module.default.default is the real component), so a plain
+// default import resolves to the raw module object instead of the
+// component and crashes with "Element type is invalid".
+const HighchartsReact: any =
+  (HighchartsReactModule as any).default?.default ||
+  (HighchartsReactModule as any).default ||
+  HighchartsReactModule;
 
 // Initialize Highcharts 3D
 (Highcharts3D as any)(Highcharts);

@@ -9,7 +9,16 @@ import { DateContext } from "../../contexts/DateContext";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import Highcharts from "highcharts";
-import HighchartsReact from "highcharts-react-official";
+import * as HighchartsReactModule from "highcharts-react-official";
+
+// highcharts-react-official's CJS build ends up double-wrapped under Vite's
+// interop (module.default.default is the real component), so a plain
+// default import resolves to the raw module object instead of the
+// component and crashes with "Element type is invalid".
+const HighchartsReact: any =
+  (HighchartsReactModule as any).default?.default ||
+  (HighchartsReactModule as any).default ||
+  HighchartsReactModule;
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import moment from 'moment-timezone';
