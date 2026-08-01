@@ -8,6 +8,8 @@ import axios from 'axios';
 import { DateContext } from "../../contexts/DateContext";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import moment from 'moment-timezone';
@@ -1019,50 +1021,51 @@ const EnergySources = ({data}: {data: any}) => {
 
 
 
-  const chartOptions: ApexOptions = {
+  const chartOptions: any = {
     chart: {
-      type: "bar",
-      background: "transparent",
-      height: 160,
-      stacked: true,
-      toolbar: { show: false },
+      type: "column",
+      backgroundColor: "transparent",
+      height: "300px",
     },
-    xaxis: {
-      categories: ["Total Consumption"],
-      title: { text: "Consumption (kVAh)" },
-    },
-    yaxis: { show: false },
+    title: { text: "" },
+    xAxis: { categories: ["Total Consumption"] },
+    yAxis: { title: { text: "Consumption (kVAh)" } },
     plotOptions: {
-      bar: {
-        horizontal: true,
-        borderRadius: 0,
-        barHeight: '60%',
+      series: {
+        stacking: "normal",
+        borderWidth: 0,
+        dataLabels: { enabled: false },
       },
     },
-    dataLabels: { enabled: false },
-    colors: ["rgb(185, 28, 28)", "rgba(96, 165, 250, 0.6)", "rgb(21, 128, 61)"],
     tooltip: {
-      y: {
-        formatter: (val: number) => `${val} kVAh`,
+      formatter: function (this: any) {
+        return `<b>${this.series.name}:</b> ${this.y} kVAh`;
       },
     },
-    legend: { show: true, position: 'bottom' },
+    series: [
+      {
+        name: `High Zone (${getMeterName(highZone.meter_id)})`,
+        data: [highZone.consumption],
+        color: "rgb(185, 28, 28)",
+      },
+      {
+        name: "Other Zones",
+        data: [otherZones],
+        color: "rgba(96, 165, 250, 0.2)",
+        showInLegend: true,
+      },
+      {
+        name: `Low Zone (${getMeterName(lowZone.meter_id)})`,
+        data: [lowZone.consumption],
+        color: "rgb(21, 128, 61)",
+      },
+    ],
+    legend: { enabled: true },
+    credits: { enabled: false },
+    exporting: {
+      enabled: false,
+    },
   };
-
-  const series = [
-    {
-      name: `High Zone (${getMeterName(highZone.meter_id)})`,
-      data: [highZone.consumption],
-    },
-    {
-      name: "Other Zones",
-      data: [otherZones],
-    },
-    {
-      name: `Low Zone (${getMeterName(lowZone.meter_id)})`,
-      data: [lowZone.consumption],
-    },
-  ];
 
 
   return (
@@ -1091,7 +1094,7 @@ const EnergySources = ({data}: {data: any}) => {
             </div>
           </div>
           <div className="flex justify-center items-center mt-6 pt-8">
-            <Chart options={chartOptions} series={series} type="bar" height={160} />
+            <HighchartsReact highcharts={Highcharts} options={chartOptions} />
           </div>
         </div>
     </div>
